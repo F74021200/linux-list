@@ -27,6 +27,32 @@ void cmp_merge(struct list_head *tmp_list,
         list_splice_tail_init(list_1, tmp_list);
 }
 
+void merge_tail(struct list_head *tmp_list,
+                struct list_head *no_merge_list,
+                int n)
+{
+    struct listitem *item_1 = NULL, *item_2 = NULL;
+    struct list_head *list_ptr;
+    int i = 0;
+    if (!list_empty(tmp_list)) {
+        while (!list_empty(no_merge_list)) {
+            item_1 = list_entry(no_merge_list->next, struct listitem, list);
+            list_ptr = tmp_list->prev;
+            for (i = 0; i < n; i++) {
+                item_2 = list_entry(list_ptr, struct listitem, list);
+                if (item_1->i > item_2->i) {
+                    list_move(no_merge_list->next, list_ptr);
+                    break;
+                }
+                list_ptr = list_ptr->prev;
+            }
+            if (i == n)
+                list_move(no_merge_list->next, list_ptr);
+        }
+    } else {
+        list_splice_init(no_merge_list, tmp_list);
+    }
+}
 void merge_sort(struct list_head *unsorted_list)
 {
     struct listitem *item = NULL;
