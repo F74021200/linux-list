@@ -30,10 +30,42 @@ void cmp_merge(struct list_head *tmp_list,
 void merge_sort(struct list_head *unsorted_list)
 {
     struct listitem *item = NULL;
-    int size = 0;
+    struct list_head tmp_list, sorted_1_list, sorted_2_list, tmp_no_merge;
+    int size = 0, n = 0, twice_n = 0;
 
     list_for_each_entry (item, unsorted_list, list) {
         size++;
+    }
+
+    INIT_LIST_HEAD(&tmp_list);
+    INIT_LIST_HEAD(&sorted_1_list);
+    INIT_LIST_HEAD(&sorted_2_list);
+    INIT_LIST_HEAD(&tmp_no_merge);
+    n = 1;
+    twice_n = n << 1;
+    while (n <= size) {
+        int j = 0;
+        for (int i = 0; i < size; i++) {
+            if (j < n) {
+                list_move_tail(unsorted_list->next, &sorted_1_list);
+                j++;
+            } else if (j >= n && j < twice_n) {
+                list_move_tail(unsorted_list->next, &sorted_2_list);
+                j++;
+            } else if (j == twice_n) {
+                cmp_merge(&tmp_list, &sorted_1_list, &sorted_2_list);
+                j = 0;
+                i--;
+            }
+        }
+        if (!list_empty(&sorted_1_list)) {
+            cmp_merge(&tmp_no_merge, &sorted_1_list, &sorted_2_list);
+            merge_tail(&tmp_list, &tmp_no_merge, twice_n);
+        }
+        list_splice_init(&tmp_list, unsorted_list);
+
+        n = n << 1;
+        twice_n = n << 1;
     }
 }
 
