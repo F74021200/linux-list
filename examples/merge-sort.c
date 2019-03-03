@@ -7,6 +7,16 @@
 
 static uint16_t values[256];
 
+void merge_sort(struct list_head *unsorted_list)
+{
+    struct listitem *item = NULL;
+    int size = 0;
+
+    list_for_each_entry (item, unsorted_list, list) {
+        size++;
+    }
+}
+
 int main()
 {
     struct list_head testlist;
