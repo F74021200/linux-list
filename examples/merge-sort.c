@@ -27,36 +27,11 @@ void cmp_merge(struct list_head *tmp_list,
         list_splice_tail_init(list_1, tmp_list);
 }
 
-void merge_tail(struct list_head *tmp_list,
-                struct list_head *no_merge_list,
-                int n)
-{
-    struct listitem *item_1 = NULL, *item_2 = NULL;
-    struct list_head *list_ptr;
-    int i = 0;
-    if (!list_empty(tmp_list)) {
-        while (!list_empty(no_merge_list)) {
-            item_1 = list_entry(no_merge_list->next, struct listitem, list);
-            list_ptr = tmp_list->prev;
-            for (i = 0; i < n; i++) {
-                item_2 = list_entry(list_ptr, struct listitem, list);
-                if (item_1->i > item_2->i) {
-                    list_move(no_merge_list->next, list_ptr);
-                    break;
-                }
-                list_ptr = list_ptr->prev;
-            }
-            if (i == n)
-                list_move(no_merge_list->next, list_ptr);
-        }
-    } else {
-        list_splice_init(no_merge_list, tmp_list);
-    }
-}
 void merge_sort(struct list_head *unsorted_list)
 {
     struct listitem *item = NULL;
-    struct list_head tmp_list, sorted_1_list, sorted_2_list, tmp_no_merge;
+    struct list_head tmp_list, sorted_1_list, sorted_2_list, tmp_no_merge,
+        *list_ptr = NULL;
     int size = 0, n = 0, twice_n = 0;
 
     list_for_each_entry (item, unsorted_list, list) {
@@ -86,7 +61,20 @@ void merge_sort(struct list_head *unsorted_list)
         }
         if (!list_empty(&sorted_1_list)) {
             cmp_merge(&tmp_no_merge, &sorted_1_list, &sorted_2_list);
-            merge_tail(&tmp_list, &tmp_no_merge, twice_n);
+
+            if (!list_empty(&tmp_list)) {
+                list_ptr = &tmp_list;
+                for (int i = 0; i < twice_n; i++)
+                    list_ptr = list_ptr->prev;
+
+                list_ptr->prev->next = &tmp_list;
+                sorted_1_list.prev = tmp_list.prev;
+                tmp_list.prev = list_ptr->prev;
+                list_ptr->prev = &sorted_1_list;
+                sorted_1_list.prev->next = &sorted_1_list;
+                sorted_1_list.next = list_ptr;
+            }
+            cmp_merge(&tmp_list, &sorted_1_list, &tmp_no_merge);
         }
         list_splice_init(&tmp_list, unsorted_list);
 
